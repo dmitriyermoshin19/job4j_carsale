@@ -3,11 +3,13 @@ package ru.job4j.store;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Restrictions;
 import org.hibernate.query.Query;
 import ru.job4j.models.*;
 import org.hibernate.cfg.Configuration;
-
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.function.Function;
 
 public class PsqlStore implements Store {
@@ -94,6 +96,38 @@ public class PsqlStore implements Store {
                         .setParameter("email", login)
                         .uniqueResult()
         );
+    }
+
+    @Override
+    public Set<Advertisement> findAdvertisementsByParams(Integer brandId, boolean withPhoto, boolean lastDate) {
+        return tx(session -> {
+            DetachedCriteria criteria = DetachedCriteria.forClass(Advertisement.class);
+            if (withPhoto) {
+                criteria.add(Restrictions.isNotNull("photo"));
+            }
+            if (lastDate) {
+                String format = "yyyy-MM-dd";
+                String field = "createdDate";
+                SimpleDateFormat sdf = new SimpleDateFormat(format);
+                Calendar c = Calendar.getInstance();
+                try {
+                    String date = sdf.format(c.getTime());
+                    Date fromDate = new SimpleDateFormat(format).parse(date);
+                    c.add(Calendar.DATE, 1);
+                    String date1 = sdf.format(c.getTime());
+                    Date toDate = new SimpleDateFormat(format).parse(date1);
+                    criteria.add(Restrictions.ge(field, fromDate));
+                    criteria.add(Restrictions.le(field, toDate));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            if (brandId != null) {
+                criteria.createCriteria("model").createCriteria("brand").add(Restrictions.eq("id", brandId));
+            }
+            List<Advertisement> list = criteria.getExecutableCriteria(session).list();
+            return (Set<Advertisement>) new HashSet<>(list);
+        });
     }
 
     private <T> T tx(final Function<Session, T> command) {

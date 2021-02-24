@@ -24,6 +24,19 @@
         </ul>
     </div>
     <div class="container">
+        <span><label for="showBrand">Выберите марку</label></span>
+        <select id="showBrand" class="form-control" title="Enter brand." name="brand" onchange="loadAdvertisement()">
+            <option value=""></option>
+        </select>
+        <div>
+            <label for="showWithPhoto">Показать с фото</label>
+            <input id="showWithPhoto" type="checkbox" onclick="loadAdvertisement()">
+        </div>
+        <div>
+            <label for="showLastDate">Показать за последний день</label>
+            <input id="showLastDate" type="checkbox" onclick="loadAdvertisement()">
+        </div>
+        <br>
         <table id="table" class="table table-bordered">
             <thead id="thead">
             <tr>
@@ -58,10 +71,18 @@
             '<tbody id="tablebody">' +
             '</tbody>'
         );
+        const data = {};
+        data.withPhoto = document.getElementById("showWithPhoto").checked;
+        data.lastDate = document.getElementById("showLastDate").checked;
+        const brand = $("#showBrand option:selected").val();
+        if (brand && brand != "") {
+            data.brandId = brand;
+        }
         $.ajax({
             type: 'GET',
             url: 'http://localhost:8080/carsale/advertisement',
-            dataType: 'text'
+            dataType: 'text',
+            data: data
         }).done(function(data) {
             const advertisements = JSON.parse(data);
             const userUUId = sessionStorage.getItem("userUUID");
@@ -86,7 +107,26 @@
             alert(err.toSource);
         });
     }
+    function loadBrands() {
+        $.ajax({
+            type: 'GET',
+            url: 'brand',
+            dataType: 'text'
+        }).done(function(data) {
+            const brands = JSON.parse(data);
+            for (let i = 0; i < brands.length; ++i) {
+                $('#showBrand option:last').after(
+                    '<option value = \"' + brands[i].id + '\" ' + '>' +
+                    brands[i].name +
+                    '</option>'
+                );
+            }
+        }).fail(function(err){
+            alert(err.toSource);
+        });
+    }
     loadAdvertisement();
+    loadBrands();
 </script>
 </body>
 </html>

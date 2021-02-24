@@ -2,6 +2,7 @@ package ru.job4j.models;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Objects;
 
 @Entity
@@ -39,6 +40,10 @@ public class Advertisement implements Serializable {
 
     @Transient
     private String temp;
+
+    @Column(name = "create_date")
+    private Date createdDate;
+
 
     public Advertisement() {
     }
@@ -121,6 +126,14 @@ public class Advertisement implements Serializable {
 
     public void setTemp(String temp) {
         this.temp = temp;
+    }
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
     }
 
     @Override
