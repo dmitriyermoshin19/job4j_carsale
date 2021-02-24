@@ -1,0 +1,324 @@
+<!DOCTYPE HTML>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous" />
+    <title>car sale</title>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" ></script>
+</head>
+<body>
+<div class="container">
+    <div class="container">
+        <a class="nav-link" href="/carsale">Назад</a>
+    </div>
+    <h2>Создание новго объявления</h2>
+    <div class="card-body">
+        <form id="advertisementForm">
+            <div id="wrappForm" class="form-group">
+                <label>Марка</label>
+                <select id="brand" class="form-control" title="Enter brand." name="brand" onchange="loadModels()">
+                    <option value=""></option>
+                </select>
+                <label>Модель</label>
+                <div id="modelSection" onchange="loadTransmission()">
+                    <select id="model" class="form-control" title="Enter model." name="model">
+                        <option value=""></option>
+                    </select>
+                </div>
+                <label>Коробка передач</label>
+                <div id="transmissioSection">
+                    <select id="transmission" class="form-control" title="Enter transmission." name="transmission">
+                        <option value=""></option>
+                    </select>
+                </div>
+                <label>Количество владельцев</label>
+                <select id="numberOfOwners" class="form-control" title="Enter number of owners." name="numberOfOwners">
+                    <option value=""></option>
+                    <option value="новое авто">новое авто</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3 и более">3 и более</option>
+                </select>
+                <label>Год выпуска</label>
+                <select id="yearIssue" class="form-control" title="Enter year issue." name="yearIssue">
+                </select>
+                <br>
+                <label>Описание</label>
+                <textarea id="description" title="Enter description." class="form-control"  name="description"></textarea><br>
+                <label id="photo">Фото авто</label>
+                <input id="file" type="file" name="file" title="Enter file.">
+            </div>
+            <button id="button" type="button" class="btn btn-primary" onclick="create()" >Сохранить</button>
+        </form>
+    </div>
+</div>
+<script>
+    function loadBrands(selected) {
+        const val = $('#brand').attr('value');
+        console.log(val);
+        $.ajax({
+            type: 'GET',
+            url: 'brand',
+            dataType: 'text'
+        }).done(function(data) {
+            const brands = JSON.parse(data);
+            for (let i = 0; i < brands.length; ++i) {
+                $('#brand option:last').after(
+                    '<option value = \"' + brands[i].id + '\" ' + (brands[i].id === selected ? 'selected' : '') + '>' +
+                    brands[i].name +
+                    '</option>'
+                );
+            }
+        }).fail(function(err){
+            alert(err.toSource);
+        });
+    }
+
+    let models;
+
+    function loadModels(params) {
+        $('#model').remove();
+        $('#modelSection').append(
+            ' <select id="model" class="form-control" title="Enter model." name="model">' +
+            '<option value =""></option>' +
+            '</select>'
+        );
+        $('#transmission').remove();
+        $('#transmissioSection').append(
+            ' <select id="transmission" class="form-control" title="Enter transmission." name="transmission">' +
+            '<option value =""></option>' +
+            '</select>'
+        );
+
+        let val = $("#brand option:selected").val();
+        if ((val && val !== '') || params) {
+            if (!val) {
+                val = params.brandId;
+            }
+            $.ajax({
+                type: 'GET',
+                url: 'model',
+                data: {
+                    brandId: val ,
+                },
+                dataType: 'text'
+            }).done(function (data) {
+                models = JSON.parse(data);
+                for (let i = 0; i < models.length; ++i) {
+                    $('#model option:last').after(
+                        '<option value = \"' + models[i].id + '\" ' +
+                        ((params && (models[i].id === params.selected)) ? 'selected' : '') + '>' +
+                        models[i].description +
+                        '</option>'
+                    );
+                }
+            }).fail(function (err) {
+                alert(err.toSource);
+            });
+        }
+    }
+
+    function loadTransmission(params) {
+        if (models || params) {
+            $('#transmission').remove();
+            $('#transmissioSection').append(
+                ' <select id="transmission" class="form-control" title="Enter transmission." name="transmission">' +
+                '<option value =""></option>' +
+                '</select>'
+            );
+            const val = $("#model option:selected").val();
+            if ((val && val !== '') || params) {
+                const model = (val) ? models.find(x => x.id == val) : params.model;
+                const transmissions = model.transmissions;
+                for (let i = 0; i < transmissions.length; ++i) {
+                    $('#transmission option:last').after(
+                        '<option value = \"' + transmissions[i].id + '\" ' +
+                        ((params && (transmissions[i].id == params.selected)) ? 'selected' : '') + '>' +
+                        transmissions[i].name + '</option>'
+                    );
+                }
+            }
+        }
+    }
+
+    function loadYears(selected) {
+        var max = new Date().getFullYear();
+        min = max - 50;
+        select = document.getElementById('yearIssue');
+
+        for (var i = max; min <= i; i--){
+            var opt = document.createElement('option');
+            opt.value = i;
+            opt.innerHTML = i;
+            if (i === selected) {
+                opt.selected = true;
+            }
+            select.appendChild(opt);
+        }
+        select.value = new Date().getFullYear();
+    }
+
+    function loadStatus(selected) {
+        $.ajax({
+            type: 'GET',
+            url: 'status',
+            dataType: 'text'
+        }).done(function(data) {
+            const statuses = JSON.parse(data);
+            $('#description').after(
+                '<br><label>Статус</label>' +
+                ' <select id="status" class="form-control" title="Enter status." name="status">' +
+                '</select><br>'
+            );
+            select = document.getElementById('status');
+            for (let i = 0; i < statuses.length; ++i) {
+                var opt = document.createElement('option');
+                opt.value = statuses[i].id;
+                opt.innerHTML = statuses[i].description;
+                if (statuses[i].id === selected) {
+                    opt.selected = true;
+                }
+                select.appendChild(opt);
+            }
+        }).fail(function(err){
+            alert(err.toSource);
+        });
+    }
+
+    function validate() {
+        let brand = $("#brand option:selected").val();
+        if (!brand || brand === "") {
+            alert($("#brand").attr('title'));
+            return false;
+        }
+        let model = $("#model option:selected").val();
+        if (!model || model === "") {
+            alert($("#model").attr('title'));
+            return false;
+        }
+        let transmission = $("#transmission option:selected").val();
+        if (!transmission || transmission === "") {
+            alert($("#transmission").attr('title'));
+            return false;
+        }
+        let numberOfOwners = $("#numberOfOwners option:selected").val();
+        if (!numberOfOwners || numberOfOwners === "") {
+            alert($("#numberOfOwners").attr('title'));
+            return false;
+        }
+        let yearIssue = $("#yearIssue option:selected").val();
+        if (!yearIssue || yearIssue === "") {
+            alert($("#yearIssue").attr('title'));
+            return false;
+        }
+        let description = $('#description').val();
+        if (!description || description === "") {
+            alert($('#description').attr('title'));
+            return false;
+        }
+        return true;
+    }
+
+    function create() {
+        if (!validate()) {
+            return false;
+        }
+        let method = "POST";
+        var $input = $("#file");
+        var fd = new FormData;
+        const advertisementId = $('#advertisementId:hidden').val();
+        if (advertisementId) {
+            fd.append('id', advertisementId);
+            method = "PUT";
+            const currImg = $("#currImg:hidden").val();
+            fd.append('currImg', currImg);
+            fd.append('status', $("#status option:selected").val());
+        }
+        fd.append('img', $input.prop('files')[0]);
+        fd.append("brand", $("#brand option:selected").val());
+        fd.append("model", $("#model option:selected").val());
+        fd.append("transmission", $("#transmission option:selected").val());
+        fd.append("numberOfOwners", $("#numberOfOwners option:selected").val());
+        fd.append("yearIssue", $("#yearIssue option:selected").val());
+        fd.append("description", $('#description').val());
+
+        $.ajax({
+            url: 'advertisement',
+            data: fd,
+            processData: false,
+            contentType: false,
+            enctype: "image/png",
+            type: method,
+            statusCode: {
+                200: function() {
+                    document.location.reload(true);
+                    document.location.replace("index.html");
+                }
+            },
+            success: function () {
+                document.location.reload(true);
+                document.location.replace("index.html");
+            }
+        });
+    }
+
+    function load() {
+        const params = new URLSearchParams(window.location.search);
+        if (!params.has('id')){
+            loadYears();
+            loadBrands();
+            return;
+        }
+        const id = params.get('id');
+        const url = 'http://localhost:8080/carsale/advertisement?id=' + id;
+        $.ajax({
+            type: 'GET',
+            url: url,
+            dataType: 'text'
+        }).done(function(data) {
+            const advertisement = JSON.parse(data);
+            loadBrands(advertisement.model.brand.id);
+            const paramsModel = {
+                brandId: advertisement.model.brand.id,
+                selected: advertisement.model.id
+            }
+            loadModels(paramsModel);
+            const paramsTransmission = {
+                model: advertisement.model,
+                selected: advertisement.transmission.id
+            }
+            loadTransmission(paramsTransmission);
+            $('#numberOfOwners option[value="' + advertisement.owners + '"]').attr('selected', 'true');
+            loadYears(advertisement.yearIssue);
+            $("#description").text(advertisement.description);
+            loadStatus(advertisement.status.id);
+            $('#file').after(
+                '<div>Текущая фотография<img src="img?id=' + advertisement.photo + '" width="250px" height="250px" /></div>'
+            );
+            $("h2").text("Редактирование объявления");
+            $('#photo').text("Редактировать фото");
+            let inputId = document.createElement('input');
+            inputId.setAttribute('type', 'hidden');
+            inputId.setAttribute('value', advertisement.id);
+            inputId.setAttribute('id', "advertisementId");
+            let wrappForm = document.getElementById('wrappForm');
+            wrappForm.insertBefore(inputId, wrappForm.firstChild);
+            let inputImg = document.createElement('input');
+            inputImg.setAttribute('type', 'hidden');
+            let t = advertisement.photo;
+            inputImg.setAttribute('value', t);
+            inputImg.setAttribute('id', "currImg");
+            wrappForm.insertBefore(inputImg, wrappForm.firstChild);
+        }).fail(function(err){
+            alert(err.toSource);
+        });
+    }
+    load();
+</script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE HTML>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous" />
+    <title>car sale</title>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" ></script>
+</head>
+<body>
+<script>
+    function validate() {
+        let result = true;
+        let login = $('#login').val();
+        if (login === '' || login === undefined) {
+            result = false;
+            alert($('#login').attr('title'));
+        }
+        let password = $('#password').val();
+
+        if (password === '' || password === undefined) {
+            result = false;
+            alert($('#password').attr('title'));
+        }
+        return result;
+    }
+
+    function reg() {
+        let result = validate();
+        if (!result) {
+            return result;
+        }
+        let data = {};
+        data.login = $('#login').val();
+        data.password = $('#password').val();
+        $.ajax({
+            type: 'POST',
+            url: 'reg',
+            data: {
+                login: data.login,
+                password: data.password,
+            },
+            statusCode: {
+                200: function() {
+                    document.location.reload(true);
+                    document.location.replace("index.html");
+                }
+            },
+        });
+    }
+
+    function loginIn() {
+        let result = validate();
+        if (!result) {
+            return result;
+        }
+        let data = {};
+        data.login = $('#login').val();
+        data.password = $('#password').val();
+        $.ajax({
+            type: 'POST',
+            url: 'auth',
+            data: {
+                login: data.login,
+                password: data.password,
+            },
+            statusCode: {
+                200: function() {
+
+                },
+                401: function() {
+                    alert("Не удалось авторизоваться. Повторите попытку авторизаци");
+                },
+            },
+            success(data, textStatus, jqXHR){
+                sessionStorage.setItem('userUUID', jqXHR.getResponseHeader('userUUID'));
+                document.location.reload(true);
+                document.location.replace("index.html");
+            }
+        });
+    }
+</script>
+<div class="container">
+    <div class="container">
+        <a class="nav-link" href="/carsale">Назад</a>
+    </div>
+    <div class="row">
+        <div class="card" style="width: 100%">
+            <div class="card-header">
+                Авторизация
+            </div>
+            <div class="card-body">
+                <form>
+                    <div class="form-group">
+                        <label>Логин</label>
+                        <input id="login" type="text" title="Enter login." class="form-control" name="login">
+                    </div>
+                    <div class="form-group">
+                        <label>Пароль</label>
+                        <input id="password" type="text" title="Enter password." class="form-control" name="password">
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="loginIn()">Войти</button>
+                    <button type="button" class="btn btn-primary" onclick="reg()">Зарегистрироваться</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
