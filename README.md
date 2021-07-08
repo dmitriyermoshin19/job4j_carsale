@@ -2,7 +2,7 @@
 [![codecov](https://codecov.io/gh/dmitriyermoshin19/job4j_carsale/branch/main/graph/badge.svg?token=5OPHEAO6TO)](https://codecov.io/gh/dmitriyermoshin19/job4j_carsale)
 # job4j_carsale
 ### Description of the project.
-This project represents the java web technology.This webapp realizes car sales area with using of principle of MVC (model-view-controller). In that app representation example of place by sales cars. On the main page shows whole list of announcements. Log in to the app with a unique username and password. The user must register.  Also registered user available creation and delete announcements. All forms are validated. The ad text is generated automatically based on the completed form.  There are ad filters: everything, only with photos, ads for the last day and a filter by car brand.
+This project represents the java web technology.This webapp using principle of MVC (model-view-controller). In that app representation example of place by sales cars. On the main page shows whole list of announcements. Log in to the app with a unique username and password. The user must register.  Also registered user available creation and delete announcements. All forms are validated. The ad text is generated automatically based on the completed form.  There are ad filters: everything, only with photos, ads for the last day and a filter by car brand.
 
 ### Used technologies
 - Java EE
